@@ -16,29 +16,47 @@ import com.qualcomm.robotcore.hardware.Servo;
  * This class uses the Config and Constants classes to initialize its values, implementing
  * the hybrid configuration system.
  *
- * Version 1.1: Added armMotor and its control methods.
+ * Version 1.2: Added armMotor, its control methods, and fully integrated its constants.
  */
 public class Robot {
 
-    // --- HARDWARE DECLARATIONS ---
-    // Drivetrain
+    // =============================================================================================
+    //                                     HARDWARE DECLARATIONS
+    // =============================================================================================
+
+    // --- Drivetrain ---
     public DcMotor leftFront;
     public DcMotor rightFront;
     public DcMotor leftRear;
     public DcMotor rightRear;
     public IMU imu;
 
-    // Mechanisms
+    // --- Mechanisms ---
     public Servo clawServo;
     public DcMotor armMotor;
 
-    // --- CONSTANTS ---
+
+    // =============================================================================================
+    //                                     CONFIGURATION CONSTANTS
+    // =============================================================================================
+
     // These variables hold the final configured values. They are populated by the init() method.
     public double CLAW_OPEN_POSITION;
     public double CLAW_CLOSED_POSITION;
     public double ARM_MANUAL_POWER_MULTIPLIER;
+    public double ARM_POWER_LIMIT;
+
+
+    // =============================================================================================
+    //                                     CLASS MEMBERS
+    // =============================================================================================
 
     private HardwareMap hardwareMap;
+
+
+    // =============================================================================================
+    //                                     CONSTRUCTOR & INITIALIZATION
+    // =============================================================================================
 
     /**
      * The constructor for the Robot class.
@@ -58,6 +76,7 @@ public class Robot {
             CLAW_OPEN_POSITION = Config.getDouble("CLAW_OPEN_POSITION", Constants.CLAW_OPEN_POSITION);
             CLAW_CLOSED_POSITION = Config.getDouble("CLAW_CLOSED_POSITION", Constants.CLAW_CLOSED_POSITION);
             ARM_MANUAL_POWER_MULTIPLIER = Config.getDouble("ARM_MANUAL_POWER_MULTIPLIER", Constants.ARM_MANUAL_POWER_MULTIPLIER);
+            ARM_POWER_LIMIT = Config.getDouble("ARM_POWER_LIMIT", Constants.ARM_POWER_LIMIT);
 
             // --- DRIVETRAIN INITIALIZATION ---
             leftFront = hardwareMap.get(DcMotor.class, "leftFront");
@@ -93,8 +112,7 @@ public class Robot {
 
             armMotor.setDirection(DcMotorSimple.Direction.FORWARD);
             armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            // NOTE: We do not set the RunMode for the arm here because it changes
-            // depending on the task (e.g., manual control vs. autonomous).
+            resetArmEncoder(); // Reset encoder to 0 on init
 
             // Set initial positions
             closeClaw();
@@ -102,9 +120,11 @@ public class Robot {
             return true; // Initialization was successful
 
         } catch (Exception e) {
+            // On failure, return false. The OpMode can use this to display an error.
             return false;
         }
     }
+
 
     // =============================================================================================
     //                                     HIGH-LEVEL CONTROL METHODS
@@ -142,7 +162,8 @@ public class Robot {
 
     // --- Arm Methods ---
     public void setArmPower(double power) {
-        // Apply the power limit from our constants to prevent damage.
+        // Ensure correct mode for manual power and apply power limit
+        armMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         armMotor.setPower(power * ARM_MANUAL_POWER_MULTIPLIER);
     }
 
@@ -151,8 +172,16 @@ public class Robot {
     }
 
     public void resetArmEncoder() {
-        // This sequence is the proper way to reset an encoder.
         armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        // The calling OpMode is responsible for setting the new RunMode afterward.
+    }
+
+    public void setArmPosition(int position) {
+        armMotor.setTargetPosition(position);
+        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        armMotor.setPower(ARM_POWER_LIMIT);
+    }
+
+    public boolean isArmBusy() {
+        return armMotor.isBusy();
     }
 }
