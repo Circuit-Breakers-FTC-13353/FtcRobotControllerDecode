@@ -52,6 +52,11 @@ public class Constants {
     public static final int ARM_INTAKE_POSITION = 50;         // Encoder ticks for the arm in intake position.
     public static final double ARM_POWER_LIMIT = 0.7;       // The maximum power to apply to the arm motor.
 
+    // --- Arm Constants ---
+    // The maximum power to apply to the arm motor during manual control.
+    // This prevents the mechanism from moving too quickly and causing damage.
+    public static final double ARM_MANUAL_POWER_MULTIPLIER = 0.4;
+
 
     // =============================================================================================
     //                                     AUTONOMOUS CONSTANTS

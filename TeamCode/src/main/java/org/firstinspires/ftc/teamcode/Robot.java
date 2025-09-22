@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -14,21 +15,28 @@ import com.qualcomm.robotcore.hardware.Servo;
  * OpModes should interact with the robot through this class only.
  * This class uses the Config and Constants classes to initialize its values, implementing
  * the hybrid configuration system.
+ *
+ * Version 1.1: Added armMotor and its control methods.
  */
 public class Robot {
 
     // --- HARDWARE DECLARATIONS ---
+    // Drivetrain
     public DcMotor leftFront;
     public DcMotor rightFront;
     public DcMotor leftRear;
     public DcMotor rightRear;
     public IMU imu;
+
+    // Mechanisms
     public Servo clawServo;
+    public DcMotor armMotor;
 
     // --- CONSTANTS ---
     // These variables hold the final configured values. They are populated by the init() method.
     public double CLAW_OPEN_POSITION;
     public double CLAW_CLOSED_POSITION;
+    public double ARM_MANUAL_POWER_MULTIPLIER;
 
     private HardwareMap hardwareMap;
 
@@ -47,10 +55,9 @@ public class Robot {
     public boolean init() {
         try {
             // --- LOAD CONSTANTS FROM HYBRID CONFIGURATION ---
-            // The Config class will first try to read from the external file.
-            // If it fails, it will use the default value from the Constants class.
             CLAW_OPEN_POSITION = Config.getDouble("CLAW_OPEN_POSITION", Constants.CLAW_OPEN_POSITION);
             CLAW_CLOSED_POSITION = Config.getDouble("CLAW_CLOSED_POSITION", Constants.CLAW_CLOSED_POSITION);
+            ARM_MANUAL_POWER_MULTIPLIER = Config.getDouble("ARM_MANUAL_POWER_MULTIPLIER", Constants.ARM_MANUAL_POWER_MULTIPLIER);
 
             // --- DRIVETRAIN INITIALIZATION ---
             leftFront = hardwareMap.get(DcMotor.class, "leftFront");
@@ -58,8 +65,6 @@ public class Robot {
             leftRear = hardwareMap.get(DcMotor.class, "leftRear");
             rightRear = hardwareMap.get(DcMotor.class, "rightRear");
 
-            // IMPORTANT: Set motor directions based on your robot's build.
-            // See the detailed comments in the previous version for a guide.
             leftFront.setDirection(DcMotor.Direction.REVERSE);
             leftRear.setDirection(DcMotor.Direction.REVERSE);
             rightFront.setDirection(DcMotor.Direction.FORWARD);
@@ -82,15 +87,21 @@ public class Robot {
             RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
             imu.initialize(new IMU.Parameters(orientationOnRobot));
 
-            // --- CLAW INITIALIZATION ---
+            // --- MECHANISM INITIALIZATION ---
             clawServo = hardwareMap.get(Servo.class, "clawServo");
-            // Set the initial position of the claw to closed.
+            armMotor = hardwareMap.get(DcMotor.class, "armMotor");
+
+            armMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+            armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            // NOTE: We do not set the RunMode for the arm here because it changes
+            // depending on the task (e.g., manual control vs. autonomous).
+
+            // Set initial positions
             closeClaw();
 
             return true; // Initialization was successful
 
         } catch (Exception e) {
-            // On failure, return false. The OpMode can use this to display an error.
             return false;
         }
     }
@@ -99,12 +110,7 @@ public class Robot {
     //                                     HIGH-LEVEL CONTROL METHODS
     // =============================================================================================
 
-    /**
-     * Drives the robot using Mecanum drive kinematics.
-     * @param forward The forward/backward power (-1 to 1).
-     * @param strafe The left/right strafing power (-1 to 1).
-     * @param turn The turning power (-1 to 1).
-     */
+    // --- Drivetrain Methods ---
     public void drive(double forward, double strafe, double turn) {
         double leftFrontPower = forward + strafe + turn;
         double rightFrontPower = forward - strafe - turn;
@@ -118,9 +124,6 @@ public class Robot {
         rightRear.setPower(rightRearPower / denominator);
     }
 
-    /**
-     * Stops all drivetrain motors.
-     */
     public void stop() {
         leftFront.setPower(0);
         rightFront.setPower(0);
@@ -128,17 +131,28 @@ public class Robot {
         rightRear.setPower(0);
     }
 
-    /**
-     * Sets the claw servo to its open position.
-     */
+    // --- Claw Methods ---
     public void openClaw() {
         clawServo.setPosition(CLAW_OPEN_POSITION);
     }
 
-    /**
-     * Sets the claw servo to its closed position.
-     */
     public void closeClaw() {
         clawServo.setPosition(CLAW_CLOSED_POSITION);
+    }
+
+    // --- Arm Methods ---
+    public void setArmPower(double power) {
+        // Apply the power limit from our constants to prevent damage.
+        armMotor.setPower(power * ARM_MANUAL_POWER_MULTIPLIER);
+    }
+
+    public int getArmPosition() {
+        return armMotor.getCurrentPosition();
+    }
+
+    public void resetArmEncoder() {
+        // This sequence is the proper way to reset an encoder.
+        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        // The calling OpMode is responsible for setting the new RunMode afterward.
     }
 }
