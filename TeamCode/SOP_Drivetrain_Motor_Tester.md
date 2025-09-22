@@ -53,3 +53,4 @@ This tool allows you to run each drivetrain motor individually to verify its dir
     - **Solution:** Check that the motor names in the robot's configuration file (`leftFront`, `rightFront`, etc.) exactly match the names used in `Robot.java`.
 - **Problem:** No motors spin when holding 'A'.
     - **Solution:** Verify the motor is physically connected and the robot battery is fully charged.
+    - 
