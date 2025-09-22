@@ -1,4 +1,5 @@
 // Filename: Ultimate_Mechanism_Range_Finder_v2.java
+
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -50,6 +51,7 @@ import java.util.Map;
  *       `robot_config.properties` file) for use in your competition OpModes.
  *
  * =================================================================================
+ * @author Team 13353 with Gemini
  */
 
 @TeleOp(name = "Ultimate: Mechanism Range Finder", group = "1-Diagnostics")

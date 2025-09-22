@@ -1,4 +1,5 @@
 // Filename: Constants.java
+
 package org.firstinspires.ftc.teamcode;
 
 /**
@@ -21,6 +22,7 @@ package org.firstinspires.ftc.teamcode;
  * has the most up-to-date "good" values as its default.
  *
  * =================================================================================
+ * @author Team 13353 with Gemini
  */
 
 public class Constants {

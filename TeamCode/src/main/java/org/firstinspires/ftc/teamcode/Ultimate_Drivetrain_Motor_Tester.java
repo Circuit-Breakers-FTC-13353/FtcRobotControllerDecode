@@ -1,4 +1,5 @@
 // Filename: Ultimate_Drivetrain_Motor_Tester.java
+
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -25,6 +26,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  * 4.  Use D-pad UP and DOWN to cycle through the test options.
  * 5.  Press and hold the 'A' button to run the selected motor(s).
  * 6.  Refer to the associated SOP to interpret the results and correct motor directions.
+ * @author Team 13353 with Gemini
  */
 @TeleOp(name = "Ultimate: Drivetrain Motor Tester", group = "1-Diagnostics")
 public class Ultimate_Drivetrain_Motor_Tester extends LinearOpMode {

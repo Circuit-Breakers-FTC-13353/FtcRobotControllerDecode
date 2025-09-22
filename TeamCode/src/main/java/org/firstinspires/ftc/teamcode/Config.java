@@ -1,4 +1,5 @@
 // Filename: Config.java
+
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.util.ReadWriteFile;
@@ -17,6 +18,7 @@ import java.util.Properties;
  * To use, call Config.load() once at the beginning of an OpMode.
  * Then, access values using the static getter methods, which provide a default
  * value as a fallback.
+ * @author Team 13353 with Gemini
  */
 public class Config {
 

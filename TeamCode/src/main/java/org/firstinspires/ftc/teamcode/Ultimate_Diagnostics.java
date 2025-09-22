@@ -1,10 +1,9 @@
+//Filename: Ultimate_Diagnostics.java
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
-import com.qualcomm.robotcore.hardware.IMU;
+
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
@@ -39,9 +38,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
  *     - Physically rotating the robot to verify the IMU heading changes.
  *     - Manually spinning wheels/mechanisms to verify encoder counts change.
  * 4.  Press (Y) on Gamepad 1 to reset the IMU heading to zero before starting a match.
+ * @author Team 13353 with Gemini
  */
 
-public class CoreDiagnostics extends LinearOpMode {
+public class Ultimate_Diagnostics extends LinearOpMode {
 
     private Robot robot;
 

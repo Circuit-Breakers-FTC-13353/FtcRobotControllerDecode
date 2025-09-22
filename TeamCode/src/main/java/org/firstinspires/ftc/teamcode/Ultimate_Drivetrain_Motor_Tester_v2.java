@@ -1,4 +1,5 @@
 // Filename: Ultimate_Drivetrain_Motor_Tester_v2.java
+//@author Team 13353 with Gemini
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;

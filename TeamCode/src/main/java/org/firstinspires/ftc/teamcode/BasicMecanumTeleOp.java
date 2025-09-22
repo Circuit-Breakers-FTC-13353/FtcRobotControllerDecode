@@ -4,6 +4,26 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+/**
+ * A basic, driver-controlled TeleOp for a mecanum drive robot.
+ *
+ * This OpMode follows the hardware abstraction model by using the 'Robot' class
+ * to manage all hardware interactions. It reads joystick values from Gamepad 1
+ * and translates them into drive commands (forward, strafe, turn), which are
+ * then passed to the `robot.drive()` method. This keeps the TeleOp code clean
+ * and focused on high-level logic.
+ *
+ * It also includes a robust initialization check to ensure all hardware is
+ * configured correctly before the match starts.
+ *
+ * CONTROLS:
+ * - Gamepad 1 Left Stick (Y-axis): Drive Forward/Backward
+ * - Gamepad 1 Left Stick (X-axis): Strafe Left/Right
+ * - Gamepad 1 Right Stick (X-axis): Turn Left/Right
+ *
+ * @author Team 13353 with Gemini
+ */
+
 @TeleOp(name = "Basic Mecanum TeleOp", group = "Competition")
 public class BasicMecanumTeleOp extends LinearOpMode {
 
