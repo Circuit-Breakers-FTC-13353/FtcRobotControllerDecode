@@ -22,7 +22,7 @@ package org.firstinspires.ftc.teamcode;
  * has the most up-to-date "good" values as its default.
  *
  * =================================================================================
- * @author Team 13353 with Gemini
+ * @author Team 13353
  */
 
 public class Constants {
@@ -53,6 +53,15 @@ public class Constants {
     public static final double ARM_POWER_LIMIT = 0.7;
     // Power limit for manual joystick control.
     public static final double ARM_MANUAL_POWER_MULTIPLIER = 0.4;
+
+    // --- Arm PIDF Coefficients ---
+    // These are the starting values for the arm's PIDF controller.
+    // These will be tuned using the Ultimate PID Tuner.
+    public static final double ARM_P = 10.0; // Proportional - determines the strength of the correction.
+    public static final double ARM_I = 0.0;  // Integral - corrects for steady-state error (gravity sag).
+    public static final double ARM_D = 1.0;  // Derivative - dampens oscillations.
+    public static final double ARM_F = 0.5;  // Feedforward - counteracts a constant force like gravity.
+
 
     // =============================================================================================
     //                                     DIAGNOSTIC TOOL CONSTANTS

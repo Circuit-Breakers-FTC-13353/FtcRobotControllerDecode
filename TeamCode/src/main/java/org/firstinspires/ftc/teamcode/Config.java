@@ -18,7 +18,7 @@ import java.util.Properties;
  * To use, call Config.load() once at the beginning of an OpMode.
  * Then, access values using the static getter methods, which provide a default
  * value as a fallback.
- * @author Team 13353 with Gemini
+ * @author Team 13353
  */
 public class Config {
 
@@ -86,4 +86,27 @@ public class Config {
         }
         return defaultValue;
     }
+
+    /**
+     * Saves a new key-value pair to the loaded properties and writes it to the file.
+     * @param key The key to save.
+     * @param value The value to save.
+     */
+    public static void save(String key, Object value) {
+        // Set the property in our in-memory properties object.
+        properties.setProperty(key, String.valueOf(value));
+
+        try {
+            // Get the file and create a FileWriter to write to it.
+            // The 'false' argument means we overwrite the file completely.
+            File file = AppUtil.getInstance().getSettingsFile("robot_config.properties");
+            java.io.FileWriter writer = new java.io.FileWriter(file, false);
+            // Store the properties to the file with a header comment.
+            properties.store(writer, "Robot Configuration - Updated by Ultimate PID Tuner");
+            writer.close();
+        } catch (IOException e) {
+            // Handle the error (e.g., log it or add telemetry)
+        }
+    }
+
 }

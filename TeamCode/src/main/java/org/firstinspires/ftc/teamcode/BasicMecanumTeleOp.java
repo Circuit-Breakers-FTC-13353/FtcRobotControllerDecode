@@ -21,7 +21,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
  * - Gamepad 1 Left Stick (X-axis): Strafe Left/Right
  * - Gamepad 1 Right Stick (X-axis): Turn Left/Right
  *
- * @author Team 13353 with Gemini
+ * @author Team 13353
  */
 
 @TeleOp(name = "Basic Mecanum TeleOp", group = "Competition")

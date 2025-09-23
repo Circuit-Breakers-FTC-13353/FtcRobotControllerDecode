@@ -1,5 +1,4 @@
 // Filename: Robot.java
-//@author Team 13353 with Gemini
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -9,54 +8,48 @@ import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
-
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 /**
- * This is the Robot Hardware Abstraction Class.
+ * The Robot Hardware Abstraction Class.
  *
- * It provides a single point of access to all robot hardware and encapsulates all hardware-specific logic.
- * OpModes should interact with the robot through this class only.
- * This class uses the Config and Constants classes to initialize its values, implementing
- * the hybrid configuration system.
+ * This class serves as a centralized hub for all robot hardware components and their control logic.
+ * It follows the "Hardware Abstraction" design pattern, meaning that all direct interactions with
+ * hardware (e.g., `hardwareMap.get()`, `motor.setPower()`) are encapsulated here.
  *
- * Version 1.2: Added armMotor, its control methods, and fully integrated its constants.
+ * OpModes (both TeleOp and Autonomous) should interact with this class to command the robot,
+ * rather than accessing hardware directly. This modular approach makes the main OpMode code
+ * cleaner, easier to read, and significantly easier to maintain.
+ *
+ * This class also integrates our hybrid configuration system, loading its constants from
+ * the `Config` class, which in turn reads from `Constants.java` and `robot_config.properties`.
+ *
+ * @author 13353
  */
+
 public class Robot {
 
-    // =============================================================================================
-    //                                     HARDWARE DECLARATIONS
-    // =============================================================================================
-    // --- Drivetrain ---
+    // --- HARDWARE DECLARATIONS ---
     public DcMotor leftFront, rightFront, leftRear, rightRear;
     public IMU imu;
-    // --- Mechanisms ---
     public Servo clawServo, wristServo;
     public DcMotor armMotor;
-    public DistanceSensor frontDistanceSensor;
+    public DistanceSensor frontDistanceSensor; // <-- Correctly included
 
-    // =============================================================================================
-    //                                     CONFIGURATION CONSTANTS
-    // =============================================================================================
+    // --- CONSTANTS ---
     public double CLAW_OPEN_POSITION, CLAW_CLOSED_POSITION;
     public double WRIST_STOW_POSITION, WRIST_SCORE_POSITION;
     public double ARM_MANUAL_POWER_MULTIPLIER, ARM_POWER_LIMIT;
 
-    // =============================================================================================
-    //                                     CLASS MEMBERS
-    // =============================================================================================
     private HardwareMap hardwareMap;
 
-    // =============================================================================================
-    //                                     CONSTRUCTOR & INITIALIZATION
-    // =============================================================================================
     public Robot(HardwareMap hwMap) {
         this.hardwareMap = hwMap;
     }
 
     public boolean init() {
         try {
-            // --- LOAD CONSTANTS FROM HYBRID CONFIGURATION ---
+            // --- LOAD CONSTANTS ---
             CLAW_OPEN_POSITION = Config.getDouble("CLAW_OPEN_POSITION", Constants.CLAW_OPEN_POSITION);
             CLAW_CLOSED_POSITION = Config.getDouble("CLAW_CLOSED_POSITION", Constants.CLAW_CLOSED_POSITION);
             WRIST_STOW_POSITION = Config.getDouble("WRIST_STOW_POSITION", Constants.WRIST_STOW_POSITION);
@@ -96,9 +89,8 @@ public class Robot {
 
             armMotor.setDirection(DcMotorSimple.Direction.FORWARD);
             armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             resetArmEncoder();
+            armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
             // Set initial positions
             closeClaw();
@@ -110,10 +102,6 @@ public class Robot {
             return false;
         }
     }
-
-    // =============================================================================================
-    //                                     HIGH-LEVEL CONTROL METHODS
-    // =============================================================================================
 
     // --- Drivetrain Methods ---
     public void drive(double forward, double strafe, double turn) {
@@ -127,7 +115,6 @@ public class Robot {
         leftRear.setPower(leftRearPower / denominator);
         rightRear.setPower(rightRearPower / denominator);
     }
-
     public void stop() {
         leftFront.setPower(0);
         rightFront.setPower(0);
@@ -136,55 +123,26 @@ public class Robot {
     }
 
     // --- Claw Methods ---
-    public void openClaw() {
-        clawServo.setPosition(CLAW_OPEN_POSITION);
-    }
-    public void closeClaw() {
-        clawServo.setPosition(CLAW_CLOSED_POSITION);
-    }
-    public void setClawPosition(double position) {
-        clawServo.setPosition(position);
-    }
+    public void openClaw() { clawServo.setPosition(CLAW_OPEN_POSITION); }
+    public void closeClaw() { clawServo.setPosition(CLAW_CLOSED_POSITION); }
+    public void setClawPosition(double position) { clawServo.setPosition(position); }
 
     // --- Wrist Methods ---
-    public void stowWrist() {
-        wristServo.setPosition(WRIST_STOW_POSITION);
-    }
-    public void scoreWrist() {
-        wristServo.setPosition(WRIST_SCORE_POSITION);
-    }
-    public void setWristPosition(double position) {
-        wristServo.setPosition(position);
-    }
+    public void stowWrist() { wristServo.setPosition(WRIST_STOW_POSITION); }
+    public void scoreWrist() { wristServo.setPosition(WRIST_SCORE_POSITION); }
+    public void setWristPosition(double position) { wristServo.setPosition(position); }
 
     // --- Arm Methods ---
     public void setArmPower(double power) {
         armMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         armMotor.setPower(power * ARM_MANUAL_POWER_MULTIPLIER);
     }
-    public int getArmPosition() {
-        return armMotor.getCurrentPosition();
-    }
-    public void resetArmEncoder() {
-        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-    }
+    public int getArmPosition() { return armMotor.getCurrentPosition(); }
+    public void resetArmEncoder() { armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); }
     public void setArmPosition(int position) {
         armMotor.setTargetPosition(position);
         armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         armMotor.setPower(ARM_POWER_LIMIT);
     }
-    public boolean isArmBusy() {
-        return armMotor.isBusy();
-    }
-
-    //Diagnostic
-    public String getSensorDiagnostics() {
-        StringBuilder sb = new StringBuilder();
-        // Arm Encoder Check
-        sb.append(String.format("Arm Encoder: OK | Pos: %d\n", armMotor.getCurrentPosition()));
-        // Distance Sensor Check
-        sb.append(String.format("Distance Sensor: OK | %.2f in\n", frontDistanceSensor.getDistance(DistanceUnit.INCH)));
-        // ...and so on for every sensor
-        return sb.toString();
-    }
+    public boolean isArmBusy() { return armMotor.isBusy(); }
 }
