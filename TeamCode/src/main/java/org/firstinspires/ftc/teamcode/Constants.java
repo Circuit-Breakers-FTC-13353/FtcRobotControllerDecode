@@ -1,5 +1,4 @@
 // Filename: Constants.java
-
 package org.firstinspires.ftc.teamcode;
 
 /**
@@ -24,13 +23,13 @@ package org.firstinspires.ftc.teamcode;
  * =================================================================================
  * @author Team 13353
  */
-
 public class Constants {
 
     // =============================================================================================
     //                                     DRIVETRAIN CONSTANTS
     // =============================================================================================
     public static final double DRIVE_POWER_MULTIPLIER = 1.0;
+
 
     // =============================================================================================
     //                                     MECHANISM CONSTANTS
@@ -45,22 +44,22 @@ public class Constants {
     public static final double WRIST_SCORE_POSITION = 0.75;
 
     // --- Arm Constants ---
-    // These are encoder positions found using the Mechanism Range Finder.
     public static final int ARM_LIFT_POSITION = 1200;
     public static final int ARM_CARRY_POSITION = 400;
     public static final int ARM_INTAKE_POSITION = 50;
-    // Power limit for autonomous movements (`RUN_TO_POSITION`).
     public static final double ARM_POWER_LIMIT = 0.7;
-    // Power limit for manual joystick control.
     public static final double ARM_MANUAL_POWER_MULTIPLIER = 0.4;
 
     // --- Arm PIDF Coefficients ---
-    // These are the starting values for the arm's PIDF controller.
-    // These will be tuned using the Ultimate PID Tuner.
-    public static final double ARM_P = 10.0; // Proportional - determines the strength of the correction.
-    public static final double ARM_I = 0.0;  // Integral - corrects for steady-state error (gravity sag).
-    public static final double ARM_D = 1.0;  // Derivative - dampens oscillations.
-    public static final double ARM_F = 0.5;  // Feedforward - counteracts a constant force like gravity.
+    public static final double ARM_P = 10.0;
+    public static final double ARM_I = 0.0;
+    public static final double ARM_D = 1.0;
+    public static final double ARM_F = 0.5;
+
+    // --- Arm Current Profile & Stall Protection ---
+    public static final double ARM_FREE_SPIN_CURRENT_AMPS = 1.5;
+    public static final double ARM_STALL_CURRENT_AMPS = 10.0;
+    public static final double ARM_STALL_THRESHOLD_AMPS = 9.0;
 
 
     // =============================================================================================
@@ -70,4 +69,7 @@ public class Constants {
     // --- Servo Tuner Constants ---
     public static final double SERVO_TUNER_SAFE_MIN = 0.05;
     public static final double SERVO_TUNER_SAFE_MAX = 0.95;
+
+    // This multiplier is used when "Slow Mode" is active in the Smart TeleOp.
+    public static final double DRIVE_SLOW_MODE_MULTIPLIER = 0.5; // 50% of normal speed
 }

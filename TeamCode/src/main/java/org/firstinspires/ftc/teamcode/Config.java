@@ -1,23 +1,23 @@
 // Filename: Config.java
-
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.util.ReadWriteFile;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Properties;
 
 /**
  * This is the Configuration Manager class.
  *
- * It reads a .properties file from the robot's file system to load constants
- * and tuning values. This allows for quick adjustments without recompiling code.
+ * It reads and writes to a .properties file on the robot's file system to manage
+ * constants and tuning values. This allows for quick adjustments without recompiling code.
  *
  * To use, call Config.load() once at the beginning of an OpMode.
  * Then, access values using the static getter methods, which provide a default
- * value as a fallback.
+ * value as a fallback from the Constants.java class.
+ *
  * @author Team 13353
  */
 public class Config {
@@ -88,7 +88,8 @@ public class Config {
     }
 
     /**
-     * Saves a new key-value pair to the loaded properties and writes it to the file.
+     * Saves a new key-value pair to the loaded properties and writes the entire
+     * property set back to the file.
      * @param key The key to save.
      * @param value The value to save.
      */
@@ -100,13 +101,12 @@ public class Config {
             // Get the file and create a FileWriter to write to it.
             // The 'false' argument means we overwrite the file completely.
             File file = AppUtil.getInstance().getSettingsFile("robot_config.properties");
-            java.io.FileWriter writer = new java.io.FileWriter(file, false);
+            FileWriter writer = new FileWriter(file, false);
             // Store the properties to the file with a header comment.
-            properties.store(writer, "Robot Configuration - Updated by Ultimate PID Tuner");
+            properties.store(writer, "Robot Configuration - Updated by an Ultimate Tool");
             writer.close();
         } catch (IOException e) {
-            // Handle the error (e.g., log it or add telemetry)
+            // Handle the error (e.g., log it or add telemetry if needed)
         }
     }
-
 }

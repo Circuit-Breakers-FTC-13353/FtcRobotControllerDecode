@@ -2,8 +2,8 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
@@ -11,41 +11,25 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
  * CoreDiagnostics - The definitive, interactive pre-match diagnostics tool.
  *
  * This OpMode provides a unified dashboard to verify the robot's core systems,
- * fulfilling the requirements of items 1.4, 1.5, and 1.6 from the roadmap with
- * an emphasis on failsafe, interactive checks.
- *
- * Key Features:
- * 1.  "Summary First" Display: A top-level system health check for a quick go/no-go
- *     decision, using clear [ OK ], [WARN], and [ERROR] tags for readability.
- * 2.  Automatic Controller Detection: Explicitly flags disconnected gamepads.
- * 3.  Interactive Liveness Checks: Provides on-screen "ACTION" prompts to guide
- *     the user in physically moving parts to verify that sensors are not just
- *     configured, but are actively working and reporting live data.
- * 4.  Comprehensive Sensor Dashboard: Checks the configuration status of all
- *     critical sensors, including every motor encoder.
- * 5.  IMU & Heading Monitor: Shows a live heading display and provides a simple,
- *     one-button reset.
+ * fulfilling the requirements of items 1.4, 1.5, and 1.6 from the roadmap. It
+ * emphasizes failsafe, interactive checks to ensure all hardware is not only
+ * configured but also actively working.
  *
  * Standard Operating Procedure (SOP):
- * Run this OpMode before every match and testing session.
+ * Run this OpMode before every match.
+ * 1. Glance at the "SYSTEM HEALTH" summary. If all is [ OK ], you are ready.
+ * 2. If any system shows an error, scroll to its detailed section.
+ * 3. Follow all on-screen "ACTION" prompts (wiggle sticks, move robot, etc.)
+ *    to perform liveness checks.
+ * 4. Press (Y) on Gamepad 1 to reset the IMU heading to zero before starting.
  *
- * 1.  Glance at the "SYSTEM HEALTH" summary at the top. If all systems are [ OK ],
- *     you are ready to proceed.
- * 2.  If any system shows [WARN], [ERROR], or [DISCONNECTED], scroll down to the
- *     detailed section for that system.
- * 3.  Follow all on-screen "ACTION" prompts. This includes:
- *     - Wiggling all controller sticks and pressing buttons.
- *     - Physically rotating the robot to verify the IMU heading changes.
- *     - Manually spinning wheels/mechanisms to verify encoder counts change.
- * 4.  Press (Y) on Gamepad 1 to reset the IMU heading to zero before starting a match.
  * @author Team 13353
  */
-
+@TeleOp(name = "Ultimate: Diagnostics", group = "1-Diagnostics")
 public class Ultimate_Diagnostics extends LinearOpMode {
 
     private Robot robot;
 
-    // Use a clearer enum for status reporting
     private enum SystemStatus {
         OK("[ OK ]"),
         WARNING("[WARN]"),
@@ -60,16 +44,32 @@ public class Ultimate_Diagnostics extends LinearOpMode {
     @Override
     public void runOpMode() {
         robot = new Robot(hardwareMap);
+        // We do NOT load config here, as this tool should test the robot
+        // in its most fundamental state. Init() is called after waitForStart()
+        // to catch config errors on the screen.
 
-        telemetry.addLine("Core Diagnostics V1.2 Initialized");
-        telemetry.addLine("This is the final, interactive version.");
-        telemetry.addLine("Press PLAY to begin checks.");
+        telemetry.addLine("Core Diagnostics Initialized.");
+        telemetry.addLine("Press START to run hardware initialization and checks.");
         telemetry.update();
 
         waitForStart();
 
+        // ** CRITICAL **
+        // We initialize AFTER start is pressed. This allows the user to see any
+        // hardware config errors from init() on the screen, instead of the
+        // OpMode just crashing in the background.
+        boolean initSuccess = robot.init();
+
         while (opModeIsActive()) {
             telemetry.clear();
+
+            // If init failed, just show the error and stop.
+            if (!initSuccess) {
+                telemetry.addLine("!!! HARDWARE INITIALIZATION FAILED !!!");
+                telemetry.addLine("Check robot configuration and physical connections.");
+                telemetry.update();
+                continue; // Skip the rest of the loop
+            }
 
             // Run checks and get their status
             SystemStatus controllerStatus = checkControllers();
@@ -88,40 +88,32 @@ public class Ultimate_Diagnostics extends LinearOpMode {
         }
     }
 
-    // --- SUMMARY DISPLAY ---
     private void displaySummary(SystemStatus controllerStatus, SystemStatus imuStatus, SystemStatus sensorStatus) {
-        telemetry.addLine("--- SYSTEM HEALTH (V1.2) ---");
+        telemetry.addLine("--- SYSTEM HEALTH ---");
         telemetry.addData("CONTROLLERS", controllerStatus.toString());
         telemetry.addData("IMU", imuStatus.toString());
         telemetry.addData("SENSORS", sensorStatus.toString());
         telemetry.addLine("\n----------------------------\n");
     }
 
-    // --- CONTROLLER CHECKS (1.6) ---
     private SystemStatus checkControllers() {
-        if (gamepad1.getGamepadId() == -1 || gamepad2.getGamepadId() == -1) {
-            return SystemStatus.DISCONNECTED;
-        }
-        return SystemStatus.OK;
+        return (gamepad1.getGamepadId() == -1 || gamepad2.getGamepadId() == -1) ? SystemStatus.DISCONNECTED : SystemStatus.OK;
     }
 
     private void displayControllerDetails() {
-        telemetry.addLine("--- Controllers ---");
+        telemetry.addLine("--- Controllers (1.6) ---");
         telemetry.addData("G1 Status", gamepad1.getGamepadId() == -1 ? SystemStatus.DISCONNECTED.toString() : SystemStatus.OK.toString());
         telemetry.addData("G2 Status", gamepad2.getGamepadId() == -1 ? SystemStatus.DISCONNECTED.toString() : SystemStatus.OK.toString());
         telemetry.addLine("\nACTION: Wiggle all sticks and press buttons to verify.");
         telemetry.addData("G1 Left Stick", "X: %.2f, Y: %.2f", gamepad1.left_stick_x, -gamepad1.left_stick_y);
-        telemetry.addData("G1 Right Stick", "X: %.2f, Y: %.2f", gamepad1.right_stick_x, -gamepad1.right_stick_y);
     }
 
-    // --- IMU CHECKS (1.4) ---
     private SystemStatus checkImu() {
-        if (robot.imu == null) return SystemStatus.ERROR;
-        return SystemStatus.OK;
+        return (robot.imu == null) ? SystemStatus.ERROR : SystemStatus.OK;
     }
 
     private void displayImuDetails() {
-        telemetry.addLine("\n--- IMU & Heading ---");
+        telemetry.addLine("\n--- IMU & Heading (1.4) ---");
         if (checkImu() == SystemStatus.ERROR) {
             telemetry.addData("IMU Status", SystemStatus.ERROR + " (Not configured in Robot.java)");
             return;
@@ -137,47 +129,48 @@ public class Ultimate_Diagnostics extends LinearOpMode {
         }
     }
 
-    // --- SENSOR CHECKS (1.5) ---
     private SystemStatus checkSensors() {
-        // This is a configuration check. The liveness check is visual/manual.
         boolean hasError = robot.leftFront == null ||
                 robot.rightFront == null ||
                 robot.leftRear == null ||
                 robot.rightRear == null ||
                 robot.armMotor == null ||
+                robot.clawServo == null ||    // Added check
+                robot.wristServo == null ||   // Added check
                 robot.frontDistanceSensor == null;
         return hasError ? SystemStatus.ERROR : SystemStatus.OK;
     }
 
     private void displaySensorDetails() {
-        telemetry.addLine("\n--- Sensor Dashboard ---");
+        telemetry.addLine("\n--- Sensor Dashboard (1.5) ---");
         telemetry.addLine("ACTION: Manually move each part. Does the value change?");
 
-        // Drivetrain Encoders
         displayEncoderStatus("Left Front", robot.leftFront);
         displayEncoderStatus("Right Front", robot.rightFront);
-        displayEncoderStatus("Left Back", robot.leftRear);
-        displayEncoderStatus("Right Back", robot.rightRear);
-
-        // Mechanism Encoders
+        displayEncoderStatus("Left Rear", robot.leftRear);
+        displayEncoderStatus("Right Rear", robot.rightRear);
         displayEncoderStatus("Arm Motor", robot.armMotor);
 
-        // Distance Sensor
+        displayServoStatus("Claw Servo", robot.clawServo);
+        displayServoStatus("Wrist Servo", robot.wristServo);
+
         if (robot.frontDistanceSensor == null) {
             telemetry.addData("Front Distance", SystemStatus.ERROR + " (Not configured)");
         } else {
-            double distance = robot.frontDistanceSensor.getDistance(DistanceUnit.INCH);
+            double distance = robot.getFrontDistance(DistanceUnit.INCH);
             String status = (distance >= 1000 || distance <= 0) ? SystemStatus.WARNING.toString() : SystemStatus.OK.toString();
             telemetry.addData("Front Distance", status + " | Range: %.2f in", distance);
         }
     }
 
-    /**
-     * Helper method to display a single motor encoder's status.
-     */
     private void displayEncoderStatus(String name, DcMotor motor) {
         String status = (motor == null) ? SystemStatus.ERROR.toString() : SystemStatus.OK.toString();
         int position = (motor == null) ? 0 : motor.getCurrentPosition();
         telemetry.addData(name + " Encoder", status + " | Pos: %d", position);
+    }
+
+    private void displayServoStatus(String name, Object servo) {
+        String status = (servo == null) ? SystemStatus.ERROR.toString() : SystemStatus.OK.toString();
+        telemetry.addData(name, status);
     }
 }
