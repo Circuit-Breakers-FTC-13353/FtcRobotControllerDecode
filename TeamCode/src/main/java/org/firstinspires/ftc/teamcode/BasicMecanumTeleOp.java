@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
  * A basic, driver-controlled TeleOp for a mecanum drive robot.
@@ -25,16 +26,15 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 public class BasicMecanumTeleOp extends LinearOpMode {
 
     private Robot robot;
+    private ElapsedTime matchTimer = new ElapsedTime(); // <-- TIMER ADDED
 
     @Override
     public void runOpMode() {
-        // Instantiate the robot by passing it the hardwareMap from this OpMode.
         robot = new Robot(hardwareMap);
-        Config.load(); // Load any overrides from the config file.
+        Config.load();
 
-        // Initialize the robot's hardware.
         if (!robot.init()) {
-            telemetry.addLine("ERROR: Hardware initialization failed. Please check configuration.");
+            telemetry.addLine("ERROR: Hardware initialization failed.");
             telemetry.update();
             while (opModeIsActive()) { sleep(20); }
             return;
@@ -45,36 +45,30 @@ public class BasicMecanumTeleOp extends LinearOpMode {
 
         waitForStart();
 
+        matchTimer.reset(); // Reset timer when match starts
+
         while (opModeIsActive()) {
-            // *** CRITICAL ***
-            // ALWAYS call robot.update() at the start of your loop.
-            // This updates all background systems, including the stall detector.
-            robot.update();
+            // *** THE CRITICAL FIX ***
+            // ALWAYS call robot.update() at the start of your loop,
+            // passing it the match timer.
+            robot.update(matchTimer);
 
             // --- DRIVETRAIN CONTROLS ---
-            // Get joystick inputs. Note the negative sign on the y-axis.
             double forward = -gamepad1.left_stick_y;
             double strafe = gamepad1.left_stick_x;
             double turn = gamepad1.right_stick_x;
-
-            // Call the high-level drive method on our robot object.
             robot.drive(forward, strafe, turn);
 
-
             // --- MECHANISM CONTROLS (EXAMPLE) ---
-            // Example of using the stall detector for the arm.
             double armPower = -gamepad1.right_stick_y;
 
             if (robot.isArmStalled()) {
-                // If the arm is stalled, stop the motor and alert the driver.
                 robot.setArmPower(0);
-                gamepad1.rumble(500); // Rumble for half a second.
+                gamepad1.rumble(500);
             } else {
-                // If not stalled, apply power normally.
                 robot.setArmPower(armPower);
             }
 
-            // Example of simple claw control.
             if (gamepad1.right_bumper) {
                 robot.openClaw();
             } else if (gamepad1.left_bumper) {

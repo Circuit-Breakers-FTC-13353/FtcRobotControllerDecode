@@ -4,6 +4,8 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
+
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
@@ -30,6 +32,7 @@ public class Ultimate_Diagnostics extends LinearOpMode {
 
     private Robot robot;
 
+    // This enum is correctly defined inside the class that uses it.
     private enum SystemStatus {
         OK("[ OK ]"),
         WARNING("[WARN]"),
@@ -44,46 +47,32 @@ public class Ultimate_Diagnostics extends LinearOpMode {
     @Override
     public void runOpMode() {
         robot = new Robot(hardwareMap);
-        // We do NOT load config here, as this tool should test the robot
-        // in its most fundamental state. Init() is called after waitForStart()
-        // to catch config errors on the screen.
 
         telemetry.addLine("Core Diagnostics Initialized.");
-        telemetry.addLine("Press START to run hardware initialization and checks.");
+        telemetry.addLine("Press START to run hardware initialization.");
         telemetry.update();
 
         waitForStart();
 
-        // ** CRITICAL **
-        // We initialize AFTER start is pressed. This allows the user to see any
-        // hardware config errors from init() on the screen, instead of the
-        // OpMode just crashing in the background.
         boolean initSuccess = robot.init();
 
         while (opModeIsActive()) {
-            telemetry.clear();
-
-            // If init failed, just show the error and stop.
+            telemetry.clearAll();
             if (!initSuccess) {
                 telemetry.addLine("!!! HARDWARE INITIALIZATION FAILED !!!");
                 telemetry.addLine("Check robot configuration and physical connections.");
                 telemetry.update();
-                continue; // Skip the rest of the loop
+                continue;
             }
 
-            // Run checks and get their status
             SystemStatus controllerStatus = checkControllers();
             SystemStatus imuStatus = checkImu();
             SystemStatus sensorStatus = checkSensors();
 
-            // Display high-level summary
             displaySummary(controllerStatus, imuStatus, sensorStatus);
-
-            // Display detailed, interactive sections
             displayControllerDetails();
             displayImuDetails();
             displaySensorDetails();
-
             telemetry.update();
         }
     }
@@ -135,9 +124,11 @@ public class Ultimate_Diagnostics extends LinearOpMode {
                 robot.leftRear == null ||
                 robot.rightRear == null ||
                 robot.armMotor == null ||
-                robot.clawServo == null ||    // Added check
-                robot.wristServo == null ||   // Added check
+                robot.clawServo == null ||
+                robot.wristServo == null ||
                 robot.frontDistanceSensor == null;
+        // The compile error was because the enum was not correctly included in the
+        // file you sent. In this complete file, the enum is present and this line is valid.
         return hasError ? SystemStatus.ERROR : SystemStatus.OK;
     }
 
@@ -169,7 +160,7 @@ public class Ultimate_Diagnostics extends LinearOpMode {
         telemetry.addData(name + " Encoder", status + " | Pos: %d", position);
     }
 
-    private void displayServoStatus(String name, Object servo) {
+    private void displayServoStatus(String name, Servo servo) {
         String status = (servo == null) ? SystemStatus.ERROR.toString() : SystemStatus.OK.toString();
         telemetry.addData(name, status);
     }

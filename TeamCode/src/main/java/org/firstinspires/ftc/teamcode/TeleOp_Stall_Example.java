@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
  * A standalone example demonstrating the real-time stall detection system.
@@ -20,14 +21,13 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 public class TeleOp_Stall_Example extends LinearOpMode {
 
     private Robot robot;
+    private ElapsedTime matchTimer = new ElapsedTime(); // <-- TIMER ADDED
 
     @Override
     public void runOpMode() {
-        // Pass the hardwareMap to the constructor.
         robot = new Robot(hardwareMap);
         Config.load();
 
-        // Call init() with NO arguments.
         if (!robot.init()) {
             telemetry.addLine("ERROR: Robot initialization failed.");
             telemetry.update();
@@ -42,30 +42,27 @@ public class TeleOp_Stall_Example extends LinearOpMode {
 
         waitForStart();
 
-        while (opModeIsActive()) {
-            // *** THE CORE LOGIC ***
+        matchTimer.reset(); // Reset timer when match starts
 
-            // 1. ALWAYS call robot.update() at the start of your loop.
-            // This updates all background systems, including the stall detector.
-            robot.update();
+        while (opModeIsActive()) {
+            // *** THE CRITICAL FIX ***
+            // 1. ALWAYS call robot.update() at the start of your loop,
+            //    passing it the match timer.
+            robot.update(matchTimer);
 
             // 2. Get the driver's input.
             double armPower = -gamepad1.right_stick_y;
 
             // 3. Check the robot's state BEFORE commanding the motors.
             if (robot.isArmStalled()) {
-                // The stall detector has been tripped.
-                // TAKE PROTECTIVE ACTION:
-                // a) Stop the motor.
                 robot.setArmPower(0);
-                // b) Alert the driver.
-                gamepad1.rumble(1.0, 1.0, 200); // Vibrate controller for 200ms
+                gamepad1.rumble(1.0, 1.0, 200);
             } else {
-                // If not stalled, operate normally.
                 robot.setArmPower(armPower);
             }
 
             // --- TELEMETRY ---
+            telemetry.addData("Match Time", "%.1f s", matchTimer.seconds());
             telemetry.addData("Arm Power Command", "%.2f", armPower);
             telemetry.addData("Arm is Stalled", robot.isArmStalled());
             telemetry.addData("Stall Threshold", "%.2f A", robot.ARM_STALL_THRESHOLD_AMPS);
