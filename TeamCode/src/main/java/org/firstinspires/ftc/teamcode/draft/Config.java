@@ -1,5 +1,5 @@
 // Filename: Config.java
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.draft;
 
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import java.io.File;

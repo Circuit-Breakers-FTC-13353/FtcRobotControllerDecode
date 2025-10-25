@@ -1,5 +1,6 @@
 // Filename: Ultimate_Mechanism_Range_Finder_v2.java
-package org.firstinspires.ftc.teamcode;
+
+package org.firstinspires.ftc.teamcode.draft;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -9,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * This is the enhanced "Ultimate Mechanism Range Finder" (Version 2).
+ * This is the enhanced "Ultimate Mechanism Range Finder"
  *
  * It is a powerful and interactive tool for safely finding and recording the encoder limits
  * and key positions for any mechanism on the robot (e.g., arms, lifts, wrists).
@@ -50,18 +51,21 @@ import java.util.Map;
  *       `robot_config.properties` file) for use in your competition OpModes.
  *
  * =================================================================================
- * @author Team 13353
+ * @author Team 13353 with Gemini
  */
-@TeleOp(name = "Ultimate: Mechanism Range Finder v2", group = "1-Diagnostics")
-public class Ultimate_Mechanism_Range_Finder_v2 extends LinearOpMode {
 
+@TeleOp(name = "Ultimate: Mechanism Range Finder", group = "1-Diagnostics")
+public class Ultimate_Mechanism_Range_Finder extends LinearOpMode {
+
+    // Define which mechanisms this tool can control.
     private enum ControllableMechanism {
-        ARM
-        // Add other motors like LIFT here in the future
+        ARM,
+        // LIFT, // Example for the future
     }
     private ControllableMechanism[] mechanisms = ControllableMechanism.values();
     private int selectedMechanismIndex = 0;
 
+    // A Map to store the saved positions for each mechanism.
     private Map<String, Map<String, Integer>> savedPositions = new HashMap<>();
 
     private Robot robot;
@@ -78,12 +82,12 @@ public class Ultimate_Mechanism_Range_Finder_v2 extends LinearOpMode {
             return;
         }
 
+        // Initialize the saved positions map for each mechanism.
         for (ControllableMechanism mechanism : mechanisms) {
             savedPositions.put(mechanism.name(), new HashMap<>());
         }
 
-        // Note: The robot.init() already resets the encoder. This is a redundant
-        // safety check for clarity.
+        // Reset all relevant encoders before init.
         robot.resetArmEncoder();
 
         telemetry.addLine("Mechanism Range Finder V2 Initialized.");
@@ -92,6 +96,8 @@ public class Ultimate_Mechanism_Range_Finder_v2 extends LinearOpMode {
         telemetry.update();
 
         waitForStart();
+
+        robot.armMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         while (opModeIsActive()) {
             handleMechanismSelection();
@@ -104,12 +110,14 @@ public class Ultimate_Mechanism_Range_Finder_v2 extends LinearOpMode {
 
     private void handleMechanismSelection() {
         if (gamepad1.right_bumper) {
-            selectedMechanismIndex = (selectedMechanismIndex + 1) % mechanisms.length;
-            sleep(250);
+            selectedMechanismIndex++;
+            if (selectedMechanismIndex >= mechanisms.length) selectedMechanismIndex = 0;
+            sleep(250); // Debounce
         }
         if (gamepad1.left_bumper) {
-            selectedMechanismIndex = (selectedMechanismIndex - 1 + mechanisms.length) % mechanisms.length;
-            sleep(250);
+            selectedMechanismIndex--;
+            if (selectedMechanismIndex < 0) selectedMechanismIndex = mechanisms.length - 1;
+            sleep(250); // Debounce
         }
     }
 
@@ -155,7 +163,6 @@ public class Ultimate_Mechanism_Range_Finder_v2 extends LinearOpMode {
             switch (selected) {
                 case ARM:
                     robot.resetArmEncoder();
-                    robot.armMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER); // Re-set mode after reset
                     break;
             }
             savedPositions.get(selected.name()).clear();
@@ -163,6 +170,9 @@ public class Ultimate_Mechanism_Range_Finder_v2 extends LinearOpMode {
         }
     }
 
+    /**
+     * Displays the corrected telemetry, now safe from type errors.
+     */
     private void displayTelemetry() {
         ControllableMechanism selected = mechanisms[selectedMechanismIndex];
         String mechanismName = selected.name();
@@ -184,7 +194,14 @@ public class Ultimate_Mechanism_Range_Finder_v2 extends LinearOpMode {
         telemetry.addLine();
         telemetry.addLine("--- Saved Values for " + mechanismName + " ---");
 
+        // *** THIS IS THE CORRECTED SECTION ***
+        // Get the map of saved positions for the currently selected mechanism.
         Map<String, Integer> positions = savedPositions.get(mechanismName);
+
+        // For each position, check if it exists in the map.
+        // If it does (is not null), display its value.
+        // If it doesn't, display the "Not Saved" string.
+        // The Telemetry.addData(caption, value) method handles converting the Integer to a String for display.
         telemetry.addData(mechanismName + "_INTAKE", positions.get("INTAKE") != null ? positions.get("INTAKE") : "Not Saved");
         telemetry.addData(mechanismName + "_CARRY", positions.get("CARRY") != null ? positions.get("CARRY") : "Not Saved");
         telemetry.addData(mechanismName + "_SCORING", positions.get("SCORING") != null ? positions.get("SCORING") : "Not Saved");

@@ -1,10 +1,9 @@
 // Filename: Ultimate_Drivetrain_Motor_Tester.java
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.draft;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 
 /**
  * This OpMode is the "Ultimate Drivetrain Motor Tester" from the FTC Ultimate Toolkit.
