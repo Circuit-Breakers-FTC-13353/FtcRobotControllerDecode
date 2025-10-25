@@ -1,9 +1,11 @@
 // Filename: BasicMecanumTeleOp.java
-package org.firstinspires.ftc.teamcode.draft;
+package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.teamcode.draft.Config;
 
 /**
  * A basic, driver-controlled TeleOp for a mecanum drive robot.
@@ -25,12 +27,12 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 @TeleOp(name = "Basic Mecanum TeleOp", group = "Competition")
 public class BasicMecanumTeleOp extends LinearOpMode {
 
-    private Robot robot;
+    private RobotMecanum robot;
     private ElapsedTime matchTimer = new ElapsedTime(); // <-- TIMER ADDED
 
     @Override
     public void runOpMode() {
-        robot = new Robot(hardwareMap);
+        robot = new RobotMecanum(hardwareMap);
         Config.load();
 
         if (!robot.init()) {
@@ -57,26 +59,9 @@ public class BasicMecanumTeleOp extends LinearOpMode {
             double forward = -gamepad1.left_stick_y;
             double strafe = gamepad1.left_stick_x;
             double turn = gamepad1.right_stick_x;
-            robot.drive(forward, strafe, turn);
-
-            // --- MECHANISM CONTROLS (EXAMPLE) ---
-            double armPower = -gamepad1.right_stick_y;
-
-            if (robot.isArmStalled()) {
-                robot.setArmPower(0);
-                gamepad1.rumble(500);
-            } else {
-                robot.setArmPower(armPower);
-            }
-
-            if (gamepad1.right_bumper) {
-                robot.openClaw();
-            } else if (gamepad1.left_bumper) {
-                robot.closeClaw();
-            }
+            robot.driveRobotCentric(forward, strafe, turn);
 
             // --- TELEMETRY ---
-            telemetry.addData("Arm Stalled", robot.isArmStalled());
             telemetry.update();
         }
     }
