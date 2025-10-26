@@ -15,8 +15,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.VoltageUnit;
-import org.firstinspires.ftc.teamcode.Config;
-import org.firstinspires.ftc.teamcode.Constants;
+import org.firstinspires.ftc.teamcode.draft.ConfigDraft;
+import org.firstinspires.ftc.teamcode.draft.ConstantsDraft;
 import org.firstinspires.ftc.teamcode.StallDetector;
 import org.firstinspires.ftc.teamcode.SystemHealthMonitor;
 
@@ -63,13 +63,13 @@ public class Robot {
     public boolean init() {
         try {
             // --- LOAD CONSTANTS ---
-            CLAW_OPEN_POSITION = Config.getDouble("CLAW_OPEN_POSITION", Constants.CLAW_OPEN_POSITION);
-            CLAW_CLOSED_POSITION = Config.getDouble("CLAW_CLOSED_POSITION", Constants.CLAW_CLOSED_POSITION);
-            WRIST_STOW_POSITION = Config.getDouble("WRIST_STOW_POSITION", Constants.WRIST_STOW_POSITION);
-            WRIST_SCORE_POSITION = Config.getDouble("WRIST_SCORE_POSITION", Constants.WRIST_SCORE_POSITION);
-            ARM_MANUAL_POWER_MULTIPLIER = Config.getDouble("ARM_MANUAL_POWER_MULTIPLIER", Constants.ARM_MANUAL_POWER_MULTIPLIER);
-            ARM_POWER_LIMIT = Config.getDouble("ARM_POWER_LIMIT", Constants.ARM_POWER_LIMIT);
-            ARM_STALL_THRESHOLD_AMPS = Config.getDouble("ARM_STALL_THRESHOLD_AMPS", Constants.ARM_STALL_THRESHOLD_AMPS);
+            CLAW_OPEN_POSITION = ConfigDraft.getDouble("CLAW_OPEN_POSITION", ConstantsDraft.CLAW_OPEN_POSITION);
+            CLAW_CLOSED_POSITION = ConfigDraft.getDouble("CLAW_CLOSED_POSITION", ConstantsDraft.CLAW_CLOSED_POSITION);
+            WRIST_STOW_POSITION = ConfigDraft.getDouble("WRIST_STOW_POSITION", ConstantsDraft.WRIST_STOW_POSITION);
+            WRIST_SCORE_POSITION = ConfigDraft.getDouble("WRIST_SCORE_POSITION", ConstantsDraft.WRIST_SCORE_POSITION);
+            ARM_MANUAL_POWER_MULTIPLIER = ConfigDraft.getDouble("ARM_MANUAL_POWER_MULTIPLIER", ConstantsDraft.ARM_MANUAL_POWER_MULTIPLIER);
+            ARM_POWER_LIMIT = ConfigDraft.getDouble("ARM_POWER_LIMIT", ConstantsDraft.ARM_POWER_LIMIT);
+            ARM_STALL_THRESHOLD_AMPS = ConfigDraft.getDouble("ARM_STALL_THRESHOLD_AMPS", ConstantsDraft.ARM_STALL_THRESHOLD_AMPS);
 
             // --- HARDWARE INIT ---
             leftFront = hardwareMap.get(DcMotor.class, "leftFront");

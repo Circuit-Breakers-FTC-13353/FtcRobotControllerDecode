@@ -77,10 +77,10 @@ public class Ultimate_PID_Tuner extends LinearOpMode {
 
         // --- Bidirectional Target Control ---
         if (gamepad1.y) {
-            targetPosition = (targetPosition == Constants.ARM_LIFT_POSITION) ? Constants.ARM_INTAKE_POSITION : Constants.ARM_LIFT_POSITION;
+            targetPosition = (targetPosition == ConstantsDraft.ARM_LIFT_POSITION) ? ConstantsDraft.ARM_INTAKE_POSITION : ConstantsDraft.ARM_LIFT_POSITION;
             executeTuningRun(targetPosition);
         } else if (gamepad1.a) {
-            targetPosition = (targetPosition == Constants.ARM_CARRY_POSITION) ? Constants.ARM_INTAKE_POSITION : Constants.ARM_CARRY_POSITION;
+            targetPosition = (targetPosition == ConstantsDraft.ARM_CARRY_POSITION) ? ConstantsDraft.ARM_INTAKE_POSITION : ConstantsDraft.ARM_CARRY_POSITION;
             executeTuningRun(targetPosition);
         }
 

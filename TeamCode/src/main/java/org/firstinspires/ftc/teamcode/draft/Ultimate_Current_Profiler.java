@@ -104,8 +104,8 @@ public class Ultimate_Current_Profiler extends LinearOpMode {
         telemetry.addLine();
 
         telemetry.addLine("--- Baseline Health Profile (from Constants.java) ---");
-        telemetry.addData("Expected Free-Spin", "< %.2f A", Constants.ARM_FREE_SPIN_CURRENT_AMPS);
-        telemetry.addData("Stall Threshold", "%.2f A", Constants.ARM_STALL_THRESHOLD_AMPS);
+        telemetry.addData("Expected Free-Spin", "< %.2f A", ConstantsDraft.ARM_FREE_SPIN_CURRENT_AMPS);
+        telemetry.addData("Stall Threshold", "%.2f A", ConstantsDraft.ARM_STALL_THRESHOLD_AMPS);
 
         telemetry.update();
     }

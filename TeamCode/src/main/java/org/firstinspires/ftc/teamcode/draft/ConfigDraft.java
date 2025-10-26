@@ -21,7 +21,7 @@ import java.util.Properties;
  *
  * @author Team 13353
  */
-public class ConflgDraft {
+public class ConfigDraft {
     private static Properties properties = new Properties();
 
     public static void load() {
