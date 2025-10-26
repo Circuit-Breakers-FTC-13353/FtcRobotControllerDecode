@@ -3,6 +3,9 @@ package org.firstinspires.ftc.teamcode.draft;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.Config;
+import org.firstinspires.ftc.teamcode.Constants;
+
 /**
  * This is the "Ultimate Power & Battery Monitor" from the FTC Ultimate Toolkit.
  *

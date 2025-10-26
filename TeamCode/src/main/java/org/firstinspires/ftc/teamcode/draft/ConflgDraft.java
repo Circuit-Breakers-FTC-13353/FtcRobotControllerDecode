@@ -2,6 +2,7 @@
 package org.firstinspires.ftc.teamcode.draft;
 
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -20,7 +21,7 @@ import java.util.Properties;
  *
  * @author Team 13353
  */
-public class Config {
+public class ConflgDraft {
     private static Properties properties = new Properties();
 
     public static void load() {

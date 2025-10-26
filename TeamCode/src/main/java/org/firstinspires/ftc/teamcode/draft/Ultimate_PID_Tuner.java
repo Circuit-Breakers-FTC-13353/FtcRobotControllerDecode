@@ -8,6 +8,9 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.Config;
+import org.firstinspires.ftc.teamcode.Constants;
+
 @TeleOp(name = "Ultimate: PID Tuner", group = "3-Performance")
 public class Ultimate_PID_Tuner extends LinearOpMode {
 
