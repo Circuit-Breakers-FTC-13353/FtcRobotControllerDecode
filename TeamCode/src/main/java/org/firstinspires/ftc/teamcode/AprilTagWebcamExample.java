@@ -91,6 +91,7 @@ public class AprilTagWebcamExample extends OpMode {
         telemetry.update();
     }
 
+
     /**
      * This method is run once when the OpMode is stopped (e.g., by pressing the stop button).
      * It's a critical place to release hardware resources.
