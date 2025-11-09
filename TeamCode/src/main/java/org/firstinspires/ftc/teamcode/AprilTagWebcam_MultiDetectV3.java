@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
  * @author Phil Malone and FIRST (Original Concept)
  */
 @TeleOp(name = "AprilTag-MultiView+Config - Ground Dist", group = "Standalone Tools")
-public class AprilTagWebcam_MultiDetect extends LinearOpMode {
+public class AprilTagWebcam_MultiDetectV3 extends LinearOpMode {
 
     private AprilTagProcessor aprilTag;
     private VisionPortal portal;
@@ -45,26 +45,11 @@ public class AprilTagWebcam_MultiDetect extends LinearOpMode {
     private boolean yWasPressed = false;
 
     /**
-     * CALIBRATION: This correction factor is used to compensate for inaccuracies in the camera's
-     * default lens calibration. It should be re-calculated whenever the camera's position or
-     * orientation is changed.
-     *
-     * How to Re-calculate this Factor (requires a tape measure):
-     * 1. Take several measurements at different, known distances from an AprilTag.
-     *    For example, place the robot so the camera is 36", 60", and 96" away.
-     * 2. For each position, record the "Ground Distance (Calc)" value shown in the telemetry.
-     * 3. Calculate the correction factor for each data point using the formula:
-     *    Correction Factor = (Actual Measured Distance) / (Calculated Distance)
-     * 4. If the factors are consistent (e.g., 0.97, 0.98, 0.975), average them to get the final
-     *    value. If they are inconsistent, re-measure carefully.
-     *
-     * Example Data Set:
-     * - Point 1: Actual: 58.0" / Calculated: 59.0" = Factor: 0.983
-     * - Point 2: Actual: 91.0" / Calculated: 93.8" = Factor: 0.970
-     * - Averaged Factor = (0.983 + 0.970) / 2 = 0.9765 (rounded to 0.975)
+     * This is a calibration correction factor to account for camera lens inaccuracies.
+     * It was determined by comparing calculated ground distances to actual measured distances.
+     * (e.g., Calculated 93.8" vs. Actual 91.0")
      */
     final double GROUND_DISTANCE_CORRECTION_FACTOR = 0.975;
-
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -176,8 +161,6 @@ public class AprilTagWebcam_MultiDetect extends LinearOpMode {
 
     private int getGain() {
         try { return portal.getCameraControl(GainControl.class).getGain(); }
-        catch (Exception e) {
-
-            return 0; }
+        catch (Exception e) { return 0; }
     }
 }
