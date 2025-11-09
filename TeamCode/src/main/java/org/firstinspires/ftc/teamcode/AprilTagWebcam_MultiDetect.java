@@ -1,35 +1,3 @@
-/*
- * Copyright (c) 2024 Team 13353
- *
- * Significant modifications and enhancements have been made to the original work.
- * These modifications include, but are not limited to:
- *  - Refactoring for multi-tag detection and display.
- *  - Encapsulation of gamepad controls for improved readability.
- *  - Addition of a toggleable display mode for a cleaner user interface.
- *  - Addition of comprehensive documentation and user instructions.
- *
- * --------------------------------------------------------------------------------
- *
- * Copyright (c) 2024 Phil Malone and FIRST
- *
- * All rights reserved.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
- * including without limitation the rights to use, copy, modify, merge, publish, distribute,
- * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or
- * substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
-
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -46,44 +14,79 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * =================================================================================================
- * STANDALONE APRILTAG TESTER (MULTI-DETECT & TOGGLE VIEW)
+ * STANDALONE APRILTAG TESTER V4 (Final Version with Autonomous Guide)
  * =================================================================================================
  *
- * This powerful diagnostic tool allows you to test AprilTag detection while manually tuning
- * camera settings for maximum reliability. It features a toggleable display to switch between
- * a camera tuning view and a detection data view.
- *
- * Why Manual Control is Critical:
- * Auto exposure is slow and unreliable in changing competition lighting. This tool lets you
- * find and set fixed Exposure and Gain values, ensuring your vision is fast and consistent.
+ * This is the ultimate diagnostic tool for AprilTag vision. It includes all previous features
+ * plus a guide on how to use the output data in your own Autonomous programs.
  *
  * How to Use:
- * 1.  Run this OpMode. The screen will start in "Tuning Mode".
- * 2.  Point the webcam at AprilTags.
- * 3.  Use the controls on Gamepad 1 to find the settings where detection is clearest.
- * 4.  Press (Y) to switch to "Detection Mode" to see detailed range and bearing data.
- * 5.  Press (Y) again to switch back to tuning.
+ * 1.  Run this OpMode to find the optimal manual camera settings for your environment.
+ * 2.  Use "Detection Mode" to understand the relationship between Slant Range, Ground Distance,
+ *     and Bearing. The Ground Distance and Bearing are the key values for navigation.
+ * 3.  Use the example below to build your own high-precision autonomous routines.
  *
- * Gamepad 1 Controls:
- * - Y Button:          TOGGLE between Tuning Mode and Detection Mode.
- * - D-Pad Up/Down:   Increase/Decrease camera Exposure.
- * - Bumpers L/R:     Decrease/Increase camera Gain.
- * - A Button:          Toggle the camera back to Auto Exposure mode.
+ * -------------------------------------------------------------------------------------------------
+ * FROM DIAGNOSTICS TO AUTONOMOUS - A CONCEPTUAL GUIDE
+ * -------------------------------------------------------------------------------------------------
  *
- * @version 3.0 - Implemented toggleable display mode for improved UI.
+ * This tool provides the two critical values you need for navigation:
+ *  - `Ground Distance`: The true forward/backward distance on the floor to the tag.
+ *  - `Bearing`: The left/right angle to the tag.
+ *
+ * Here is a pseudo-code example of how you would use this data in an Autonomous OpMode to
+ * drive the robot to a precise position (e.g., 12 inches away from Tag #5).
+ *
+ *   // --- Start of Autonomous Pseudo-Code ---
+ *
+ *   // 1. Define Your Targets
+ *   double TARGET_GROUND_DISTANCE = 12.0; // inches
+ *   int TARGET_TAG_ID = 5;
+ *   double TURN_SPEED = 0.4;
+ *   double DRIVE_SPEED = 0.5;
+ *
+ *   // 2. Find the target tag
+ *   AprilTagDetection myTag = findTag(TARGET_TAG_ID);
+ *
+ *   // 3. Align the Robot (Correct for Bearing)
+ *   // Turn the robot until the bearing is close to 0 degrees.
+ *   while (myTag.ftcPose.bearing > 1.0) {
+ *       turnRight(TURN_SPEED);
+ *       myTag = findTag(TARGET_TAG_ID); // Get updated data
+ *   }
+ *   while (myTag.ftcPose.bearing < -1.0) {
+ *       turnLeft(TURN_SPEED);
+ *       myTag = findTag(TARGET_TAG_ID); // Get updated data
+ *   }
+ *
+ *   // 4. Drive to the Target Distance (Correct for Ground Distance)
+ *   // Calculate the current ground distance using the formula from this tool.
+ *   double currentGroundDistance = calculateGroundDistance(myTag);
+ *
+ *   while (currentGroundDistance > TARGET_GROUND_DISTANCE) {
+ *       driveForward(DRIVE_SPEED);
+ *       myTag = findTag(TARGET_TAG_ID); // Get updated data
+ *       currentGroundDistance = calculateGroundDistance(myTag); // Update the distance
+ *   }
+ *
+ *   // 5. Stop the robot
+ *   stop();
+ *
+ *   // --- End of Autonomous Pseudo-Code ---
+ *
+ *
+ * @version 4.0 - Added Autonomous implementation guide to the header.
  * @author Team 13353 (Modifications)
  * @author Phil Malone and FIRST (Original Concept)
  */
-@TeleOp(name = "AprilTag-MultiView+Config", group = "Standalone Tools")
+@TeleOp(name = "AprilTag-MultiView+Config - Ground Dist", group = "Standalone Tools")
 public class AprilTagWebcam_MultiDetect extends LinearOpMode {
 
     private AprilTagProcessor aprilTag;
     private VisionPortal portal;
 
-    // --- STATE VARIABLES for the toggleable display ---
-    // This boolean tracks which view is currently active.
+    // State variables for the toggleable display
     private boolean isTuningMode = true;
-    // This boolean handles the debounce for the toggle button.
     private boolean yWasPressed = false;
 
     @Override
@@ -93,33 +96,22 @@ public class AprilTagWebcam_MultiDetect extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-            // --- HANDLE CONTROLS ---
-            // The camera settings are adjusted in the background, regardless of the display mode.
             handleGamepadControls();
 
-            // This logic handles toggling the display mode with the 'Y' button.
-            // It uses a non-blocking debounce to ensure one press = one toggle.
             if (gamepad1.y && !yWasPressed) {
-                isTuningMode = !isTuningMode; // Flip the boolean mode
+                isTuningMode = !isTuningMode;
             }
-            yWasPressed = gamepad1.y; // Update the button state for the next loop.
+            yWasPressed = gamepad1.y;
 
-
-            // --- UPDATE TELEMETRY BASED ON THE CURRENT MODE ---
-            telemetry.clearAll(); // Clear the screen each loop to prevent flickering.
-
+            telemetry.clearAll();
             if (isTuningMode) {
-                // In Tuning Mode, show the instructions and live camera settings.
                 displayTuningTelemetry();
             } else {
-                // In Detection Mode, show the data for all visible AprilTags.
                 telemetryAprilTag();
             }
 
-            // Add a persistent footer to the telemetry to remind the user how to switch modes.
             telemetry.addLine("\n----------------------------------------");
             telemetry.addLine("Press (Y) to switch between Tuning and Detection views");
-
             telemetry.update();
             sleep(20);
         }
@@ -127,9 +119,6 @@ public class AprilTagWebcam_MultiDetect extends LinearOpMode {
         portal.close();
     }
 
-    /**
-     * Initializes the AprilTag processor and the Vision Portal.
-     */
     private void initAprilTag() {
         aprilTag = new AprilTagProcessor.Builder().build();
         portal = new VisionPortal.Builder()
@@ -139,7 +128,7 @@ public class AprilTagWebcam_MultiDetect extends LinearOpMode {
     }
 
     /**
-     * Displays telemetry for ALL detected AprilTags. (DETECTION MODE)
+     * Displays telemetry for ALL detected AprilTags, including Ground Distance.
      */
     private void telemetryAprilTag() {
         telemetry.addLine("--- Detection Mode ---");
@@ -149,17 +138,20 @@ public class AprilTagWebcam_MultiDetect extends LinearOpMode {
 
         for (AprilTagDetection detection : currentDetections) {
             if (detection.metadata != null) {
+                double slantRange = detection.ftcPose.range;
+                double elevation = detection.ftcPose.elevation;
+                double elevationRadians = Math.toRadians(elevation);
+                double groundDistance = slantRange * Math.cos(elevationRadians);
+
                 telemetry.addLine(String.format(">> ID %d (%s)", detection.id, detection.metadata.name));
-                telemetry.addLine(String.format("   Range: %5.1f inches", detection.ftcPose.range));
-                telemetry.addLine(String.format("   Bearing: %3.0f degrees", detection.ftcPose.bearing));
-                telemetry.addLine(String.format("   Elevation: %3.0f degrees", detection.ftcPose.elevation));
+                telemetry.addLine(String.format("   Slant Range: %5.1f in", slantRange));
+                telemetry.addLine(String.format("   Ground Distance: %5.1f in", groundDistance));
+                telemetry.addLine(String.format("   Bearing: %3.0f deg", detection.ftcPose.bearing));
+                telemetry.addLine(String.format("   Elevation: %3.0f deg", elevation));
             }
         }
     }
 
-    /**
-     * Displays instructions and live values for camera settings. (TUNING MODE)
-     */
     private void displayTuningTelemetry() {
         telemetry.addLine("--- Camera Tuning Mode ---");
         telemetry.addLine("Use D-Pad and Bumpers to adjust settings.");
@@ -169,10 +161,6 @@ public class AprilTagWebcam_MultiDetect extends LinearOpMode {
         telemetry.addData("Gain", getGain());
     }
 
-    /**
-     * Handles gamepad inputs for manually adjusting camera settings.
-     * This method runs in the background regardless of the display mode.
-     */
     private void handleGamepadControls() {
         if (gamepad1.dpad_up) { setManualExposure(getExposure() + 1, getGain()); }
         if (gamepad1.dpad_down && getExposure() > 1) { setManualExposure(getExposure() - 1, getGain()); }
@@ -181,12 +169,8 @@ public class AprilTagWebcam_MultiDetect extends LinearOpMode {
         if (gamepad1.a) { portal.getCameraControl(ExposureControl.class).setMode(ExposureControl.Mode.Auto); }
     }
 
-    /**
-     * Sets the camera to manual exposure mode with specific values.
-     */
     private void setManualExposure(long exposureMS, int gain) {
         if (portal == null || portal.getCameraState() != VisionPortal.CameraState.STREAMING) return;
-
         ExposureControl exposureControl = portal.getCameraControl(ExposureControl.class);
         if (exposureControl.getMode() != ExposureControl.Mode.Manual) {
             exposureControl.setMode(ExposureControl.Mode.Manual);
@@ -199,21 +183,13 @@ public class AprilTagWebcam_MultiDetect extends LinearOpMode {
         sleep(20);
     }
 
-    /** Helper method to safely get the current exposure setting. */
     private long getExposure() {
-        try {
-            return portal.getCameraControl(ExposureControl.class).getExposure(TimeUnit.MILLISECONDS);
-        } catch (Exception e) {
-            return 0;
-        }
+        try { return portal.getCameraControl(ExposureControl.class).getExposure(TimeUnit.MILLISECONDS); }
+        catch (Exception e) { return 0; }
     }
 
-    /** Helper method to safely get the current gain setting. */
     private int getGain() {
-        try {
-            return portal.getCameraControl(GainControl.class).getGain();
-        } catch (Exception e) {
-            return 0;
-        }
+        try { return portal.getCameraControl(GainControl.class).getGain(); }
+        catch (Exception e) { return 0; }
     }
 }

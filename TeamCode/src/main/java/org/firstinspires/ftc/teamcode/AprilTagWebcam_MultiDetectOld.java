@@ -6,7 +6,6 @@
  *  - Refactoring for multi-tag detection and display.
  *  - Encapsulation of gamepad controls for improved readability.
  *  - Addition of a toggleable display mode for a cleaner user interface.
- *  - Implementation of a Known vs. Apparent size comparison feature for diagnostics.
  *  - Addition of comprehensive documentation and user instructions.
  *
  * --------------------------------------------------------------------------------
@@ -47,20 +46,23 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * =================================================================================================
- * STANDALONE APRILTAG TESTER V2 (with Size Comparison & Toggle View)
+ * STANDALONE APRILTAG TESTER (MULTI-DETECT & TOGGLE VIEW)
  * =================================================================================================
  *
  * This powerful diagnostic tool allows you to test AprilTag detection while manually tuning
  * camera settings for maximum reliability. It features a toggleable display to switch between
- * a camera tuning view and a detailed detection data view.
+ * a camera tuning view and a detection data view.
  *
  * Why Manual Control is Critical:
  * Auto exposure is slow and unreliable in changing competition lighting. This tool lets you
  * find and set fixed Exposure and Gain values, ensuring your vision is fast and consistent.
  *
- * Key Diagnostic Feature:
- * In "Detection Mode," this tool displays the tag's known physical size alongside its apparent
- * size in pixels. A stable pixel width directly translates to a stable and accurate distance calculation.
+ * How to Use:
+ * 1.  Run this OpMode. The screen will start in "Tuning Mode".
+ * 2.  Point the webcam at AprilTags.
+ * 3.  Use the controls on Gamepad 1 to find the settings where detection is clearest.
+ * 4.  Press (Y) to switch to "Detection Mode" to see detailed range and bearing data.
+ * 5.  Press (Y) again to switch back to tuning.
  *
  * Gamepad 1 Controls:
  * - Y Button:          TOGGLE between Tuning Mode and Detection Mode.
@@ -68,61 +70,68 @@ import java.util.concurrent.TimeUnit;
  * - Bumpers L/R:     Decrease/Increase camera Gain.
  * - A Button:          Toggle the camera back to Auto Exposure mode.
  *
- * @version 3.2 - Corrected method for getting known tag size.
+ * @version 3.0 - Implemented toggleable display mode for improved UI.
  * @author Team 13353 (Modifications)
  * @author Phil Malone and FIRST (Original Concept)
  */
-@TeleOp(name = "AprilTag-MultiView+ConfigV2", group = "Standalone Tools")
-public class AprilTagWebcam_MultiDetectV2 extends LinearOpMode {
+@TeleOp(name = "AprilTag-MultiView+Config", group = "Standalone Tools")
+public class AprilTagWebcam_MultiDetectOld extends LinearOpMode {
 
     private AprilTagProcessor aprilTag;
     private VisionPortal portal;
 
-    // State variables for the toggleable display
+    // --- STATE VARIABLES for the toggleable display ---
+    // This boolean tracks which view is currently active.
     private boolean isTuningMode = true;
+    // This boolean handles the debounce for the toggle button.
     private boolean yWasPressed = false;
 
     @Override
     public void runOpMode() throws InterruptedException {
         initAprilTag();
-        setManualExposure(6, 250); // Set a sane starting exposure
+        setManualExposure(6, 250);
         waitForStart();
 
         while (opModeIsActive()) {
-            // Handle all gamepad inputs in the background
+            // --- HANDLE CONTROLS ---
+            // The camera settings are adjusted in the background, regardless of the display mode.
             handleGamepadControls();
 
-            // Handle the display mode toggle logic
+            // This logic handles toggling the display mode with the 'Y' button.
+            // It uses a non-blocking debounce to ensure one press = one toggle.
             if (gamepad1.y && !yWasPressed) {
-                isTuningMode = !isTuningMode; // Flip the mode
+                isTuningMode = !isTuningMode; // Flip the boolean mode
             }
-            yWasPressed = gamepad1.y;
+            yWasPressed = gamepad1.y; // Update the button state for the next loop.
 
-            // Update telemetry based on the current mode
-            telemetry.clearAll();
+
+            // --- UPDATE TELEMETRY BASED ON THE CURRENT MODE ---
+            telemetry.clearAll(); // Clear the screen each loop to prevent flickering.
+
             if (isTuningMode) {
+                // In Tuning Mode, show the instructions and live camera settings.
                 displayTuningTelemetry();
             } else {
+                // In Detection Mode, show the data for all visible AprilTags.
                 telemetryAprilTag();
             }
 
-            // Add a persistent footer to remind the user how to switch modes
+            // Add a persistent footer to the telemetry to remind the user how to switch modes.
             telemetry.addLine("\n----------------------------------------");
             telemetry.addLine("Press (Y) to switch between Tuning and Detection views");
+
             telemetry.update();
             sleep(20);
         }
 
-        portal.close(); // Release camera resources
+        portal.close();
     }
 
     /**
      * Initializes the AprilTag processor and the Vision Portal.
      */
     private void initAprilTag() {
-        aprilTag = new AprilTagProcessor.Builder()
-                .build(); // Automatically loads the CenterStage tag library
-
+        aprilTag = new AprilTagProcessor.Builder().build();
         portal = new VisionPortal.Builder()
                 .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
                 .addProcessor(aprilTag)
@@ -130,7 +139,7 @@ public class AprilTagWebcam_MultiDetectV2 extends LinearOpMode {
     }
 
     /**
-     * Displays telemetry for ALL detected AprilTags, including size comparison.
+     * Displays telemetry for ALL detected AprilTags. (DETECTION MODE)
      */
     private void telemetryAprilTag() {
         telemetry.addLine("--- Detection Mode ---");
@@ -140,38 +149,16 @@ public class AprilTagWebcam_MultiDetectV2 extends LinearOpMode {
 
         for (AprilTagDetection detection : currentDetections) {
             if (detection.metadata != null) {
-                // Get the known physical size of the tag by looking it up with our helper method.
-                double knownSize = getKnownTagSize(detection.id);
-                // Calculate the apparent width of the tag on the camera sensor in pixels.
-                double pixelWidth = Math.abs(detection.corners[1].x - detection.corners[0].x);
-
                 telemetry.addLine(String.format(">> ID %d (%s)", detection.id, detection.metadata.name));
-                telemetry.addLine(String.format("   Known Size: %5.2f in", knownSize));
-                telemetry.addLine(String.format("   Pixel Width: %5.1f px", pixelWidth));
-                telemetry.addLine(String.format("   Range: %5.1f in", detection.ftcPose.range));
-                telemetry.addLine(String.format("   Bearing: %3.0f deg", detection.ftcPose.bearing));
+                telemetry.addLine(String.format("   Range: %5.1f inches", detection.ftcPose.range));
+                telemetry.addLine(String.format("   Bearing: %3.0f degrees", detection.ftcPose.bearing));
+                telemetry.addLine(String.format("   Elevation: %3.0f degrees", detection.ftcPose.elevation));
             }
         }
     }
 
     /**
-     * Returns the known physical size of an AprilTag based on its ID for the CenterStage game.
-     * @param tagId The ID of the AprilTag.
-     * @return The physical size of the tag in inches.
-     */
-    private double getKnownTagSize(int tagId) {
-        // For the CenterStage game (2023-2024), tags 1-6 are small (2 inches)
-        // and tags 7-10 are large (5 inches).
-        if (tagId >= 1 && tagId <= 6) {
-            return 2.0;
-        } else if (tagId >= 7 && tagId <= 10) {
-            return 5.0;
-        }
-        return 0.0; // Return 0 for any unrecognized ID
-    }
-
-    /**
-     * Displays instructions and live values for camera settings in Tuning Mode.
+     * Displays instructions and live values for camera settings. (TUNING MODE)
      */
     private void displayTuningTelemetry() {
         telemetry.addLine("--- Camera Tuning Mode ---");
@@ -184,6 +171,7 @@ public class AprilTagWebcam_MultiDetectV2 extends LinearOpMode {
 
     /**
      * Handles gamepad inputs for manually adjusting camera settings.
+     * This method runs in the background regardless of the display mode.
      */
     private void handleGamepadControls() {
         if (gamepad1.dpad_up) { setManualExposure(getExposure() + 1, getGain()); }
@@ -198,6 +186,7 @@ public class AprilTagWebcam_MultiDetectV2 extends LinearOpMode {
      */
     private void setManualExposure(long exposureMS, int gain) {
         if (portal == null || portal.getCameraState() != VisionPortal.CameraState.STREAMING) return;
+
         ExposureControl exposureControl = portal.getCameraControl(ExposureControl.class);
         if (exposureControl.getMode() != ExposureControl.Mode.Manual) {
             exposureControl.setMode(ExposureControl.Mode.Manual);
